@@ -76,10 +76,10 @@ pipeline/       # pipeline steps
 ```mermaid
 flowchart LR
     A[User Request] --> B[Validate]
-    B --> C[Embed (vectorization)]
+    B --> C[Embed]
     C --> D[Search in Qdrant]
     D --> E[Context Formation]
-    E --> F[LLM (OpenAI API)]
+    E --> F[LLM OpenAI API]
     F --> G[Postprocess]
     G --> H[Client Response]
 ```

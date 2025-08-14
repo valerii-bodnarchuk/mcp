@@ -1,0 +1,13 @@
+{
+    "name": "mcpx",
+    "private": true,
+    "workspaces": ["apps/*"],
+    "scripts": {
+      "dev": "concurrently -k \"pnpm --filter api dev\" \"pnpm --filter web dev\"",
+      "build": "pnpm -r build",
+      "start": "pnpm --filter api start & pnpm --filter web start"
+    },
+    "devDependencies": {
+      "concurrently": "8.2.2"
+    }
+  }

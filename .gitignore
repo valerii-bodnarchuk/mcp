@@ -1,0 +1,16 @@
+.env
+.env.*
+apps/*/.env
+infra/.env
+node_modules
+.next
+dist
+.DS_Store
+EOF.env
+.env.*
+apps/*/.env
+infra/.env
+node_modules
+.next
+dist
+.DS_Store

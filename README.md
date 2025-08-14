@@ -1,41 +1,41 @@
 # MCP — Multi-Component Pipeline
 
-**MCP** (Multi-Component Pipeline) — модульный фреймворк для построения цепочек обработки запросов с использованием **LLM**, **Retrieval-Augmented Generation (RAG)** и векторного поиска (**Qdrant**).  
-Каждый шаг пайплайна выполняется последовательно и может быть заменён или расширен.
+**MCP** (Multi-Component Pipeline) is a modular framework for building request processing chains using **LLM**, **Retrieval-Augmented Generation (RAG)**, and vector search (**Qdrant**).  
+Each pipeline step is executed sequentially and can be replaced or extended.
 
 ---
 
-## ✨ Возможности
+## ✨ Features
 
-- **LLM Orchestration** — пошаговая обработка запроса с логированием
-- **RAG** — извлечение контекста через Qdrant
-- **Streaming API** — поддержка стриминга ответов LLM
-- **Модульная архитектура** — каждый шаг оформлен как отдельный модуль
-- **Готовность к интеграции** — API совместим с REST-запросами
+- **LLM Orchestration** — step-by-step request processing with logging
+- **RAG** — context retrieval through Qdrant
+- **Streaming API** — LLM response streaming support
+- **Modular Architecture** — each step is implemented as a separate module
+- **Integration Ready** — REST API compatible
 
 ---
 
-## 🚀 Быстрый старт
+## 🚀 Quick Start
 
-### 1. Клонировать репозиторий
+### 1. Clone the repository
 ```bash
 git clone https://github.com/YOUR_USERNAME/mcp.git
 cd mcp
 ```
 
-### 2. Запустить с Docker Compose
+### 2. Run with Docker Compose
 ```bash
 docker compose up --build
 ```
 
-### 3. Выполнить запрос
+### 3. Make a request
 ```bash
 curl -X POST http://localhost:3001/pipeline/run \
   -H "Content-Type: application/json" \
   -d '{"query":"What is MCP?"}'
 ```
 
-**Пример ответа:**
+**Example response:**
 ```json
 {
   "result": "MCP is a graph-based system that utilizes Qdrant for managing and processing its components..."
@@ -44,14 +44,14 @@ curl -X POST http://localhost:3001/pipeline/run \
 
 ---
 
-## 📁 Структура проекта
+## 📁 Project Structure
 
 ```
 apps/
-  api/          # API сервис с эндпоинтами /pipeline/run и /pipeline/stream
-  web/          # Next.js UI (если используется)
-infra/          # docker-compose, конфиги сервисов
-pipeline/       # шаги пайплайна
+  api/          # API service with /pipeline/run and /pipeline/stream endpoints
+  web/          # Next.js UI (if used)
+infra/          # docker-compose, service configs
+pipeline/       # pipeline steps
   steps/
     validate.js
     embed.js
@@ -62,31 +62,31 @@ pipeline/       # шаги пайплайна
 
 ---
 
-## 🛠️ Технологический стек
+## 🛠️ Tech Stack
 
 - **Node.js** — backend runtime
 - **Qdrant** — Vector Database
-- **OpenAI API** — LLM провайдер
-- **Docker & Docker Compose** — контейнеризация
+- **OpenAI API** — LLM provider
+- **Docker & Docker Compose** — containerization
 
 ---
 
-## 📊 Архитектура пайплайна
+## 📊 Pipeline Architecture
 
 ```mermaid
 flowchart LR
-    A[Запрос от пользователя] --> B[Validate]
-    B --> C[Embed (векторизация)]
-    C --> D[Search в Qdrant]
-    D --> E[Формирование контекста]
+    A[User Request] --> B[Validate]
+    B --> C[Embed (vectorization)]
+    C --> D[Search in Qdrant]
+    D --> E[Context Formation]
     E --> F[LLM (OpenAI API)]
     F --> G[Postprocess]
-    G --> H[Ответ клиенту]
+    G --> H[Client Response]
 ```
 
 ---
 
-## 🔧 Конфигурация
+## 🔧 Configuration
 
 ### Environment Variables
 ```bash
@@ -128,7 +128,7 @@ volumes:
 ## 📡 API Endpoints
 
 ### POST /pipeline/run
-Выполняет полный пайплайн обработки запроса.
+Executes the full request processing pipeline.
 
 **Request:**
 ```json
@@ -154,7 +154,7 @@ volumes:
 ```
 
 ### POST /pipeline/stream
-То же самое, но с потоковой передачей ответа.
+Same functionality but with streaming response.
 
 **Request:**
 ```json
@@ -168,17 +168,17 @@ volumes:
 
 ---
 
-## 🔌 Расширение пайплайна
+## 🔌 Extending the Pipeline
 
-### Добавление нового шага
+### Adding a New Step
 
-1. Создайте файл в `pipeline/steps/`:
+1. Create a file in `pipeline/steps/`:
 ```javascript
 // pipeline/steps/custom-step.js
 export async function customStep(context) {
   const { query, previousResults } = context;
   
-  // Ваша логика обработки
+  // Your processing logic
   const result = await processData(query);
   
   return {
@@ -188,7 +188,7 @@ export async function customStep(context) {
 }
 ```
 
-2. Зарегистрируйте шаг в пайплайне:
+2. Register the step in the pipeline:
 ```javascript
 // pipeline/index.js
 import { customStep } from './steps/custom-step.js';
@@ -197,7 +197,7 @@ export const pipeline = [
   validateStep,
   embedStep,
   searchStep,
-  customStep,      // ← новый шаг
+  customStep,      // ← new step
   llmStep,
   postprocessStep
 ];
@@ -205,54 +205,54 @@ export const pipeline = [
 
 ---
 
-## 🧪 Тестирование
+## 🧪 Testing
 
-### Запуск тестов
+### Running Tests
 ```bash
 npm test
 ```
 
-### Интеграционные тесты
+### Integration Tests
 ```bash
 npm run test:integration
 ```
 
-### Нагрузочное тестирование
+### Load Testing
 ```bash
 npm run test:load
 ```
 
 ---
 
-## 📊 Мониторинг
+## 📊 Monitoring
 
-### Логи
+### Logs
 ```bash
-# Просмотр логов API
+# View API logs
 docker compose logs -f api
 
-# Логи Qdrant
+# Qdrant logs
 docker compose logs -f qdrant
 ```
 
-### Метрики
-- Processing time по шагам
-- Количество запросов в секунду
-- Использование памяти векторной БД
-- Latency LLM запросов
+### Metrics
+- Processing time per step
+- Requests per second
+- Vector DB memory usage
+- LLM request latency
 
 ---
 
 ## 🤝 Contributing
 
-1. Форкните репозиторий
-2. Создайте feature branch: `git checkout -b feature/amazing-feature`
-3. Сделайте коммит: `git commit -m 'Add amazing feature'`
-4. Запушьте в branch: `git push origin feature/amazing-feature`
-5. Создайте Pull Request
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Create a Pull Request
 
 ---
 
-## 📄 Лицензия
+## 📄 License
 
-MIT License - подробности в файле [LICENSE](LICENSE)
+MIT License - see [LICENSE](LICENSE) file for details

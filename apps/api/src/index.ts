@@ -15,6 +15,17 @@ app.register(ingestRoutes, { prefix: "/ingest" });
 app.register(pipelineRoutes, { prefix: "/pipeline" });
 
 const port = Number(process.env.PORT || 3001);
+
+app.get('/health', async () => ({ ok: true }));
+
+app.register(async (app) => {
+  app.ready(() => {
+    app.log.info('--- ROUTES ---');
+    // @ts-ignore
+    console.log(app.printRoutes());
+  });
+});
+
 app.listen({ port, host: "0.0.0.0" }).catch((err) => {
   app.log.error(err);
   process.exit(1);

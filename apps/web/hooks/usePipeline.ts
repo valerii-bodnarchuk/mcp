@@ -84,7 +84,7 @@ export function usePipeline({ api, nodes, edges, query }: PipelineConfig) {
     es.onerror = () => { es.close(); setRunning(false); };
   }
 
-  function share(_: { nodes: Node[]; edges: Edge[]; query: string }) { /* твоя encodeToURL, не трогаю */ }
+  function share(_: { nodes: CustomNode[]; edges: Edge[]; query: string }) { /* твоя encodeToURL, не трогаю */ }
 
   return { run, stream, share, logs, statuses, metrics, cost, ctx, running, clear };
 }

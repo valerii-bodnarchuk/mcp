@@ -20,13 +20,13 @@ export default function RightPanel({ logs, metrics, ctx, cost, running, onClear 
         </div>
         <div className="grid grid-cols-3 gap-2 text-sm">
           <Metric label="Latency" value={`${metrics.totalMs} ms`} />
-          <Metric label="Tokens In" value={String(metrics.tokensIn)} />
-          <Metric label="Tokens Out" value={String(metrics.tokensOut)} />
+          {/* <Metric label="Tokens In" value={String(metrics.tokensIn)} /> */}
+          {/* <Metric label="Tokens Out" value={String(metrics.tokensOut)} /> */}
         </div>
-        <div className="mt-3 text-sm flex items-center justify-between">
+        {cost.totalUSD > 0 && <div className="mt-3 text-sm flex items-center justify-between">
           <div className="text-slate-400">Cost</div>
-          <div className="font-medium">${cost.totalUSD.toFixed(5)}</div>
-        </div>
+          <div className="font-medium">${cost.totalUSD}</div>
+        </div>}
       </div>
 
       <div className="rounded-2xl border border-slate-800 bg-[#10161D] p-3 h-[58vh] overflow-y-auto">

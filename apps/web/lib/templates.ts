@@ -5,7 +5,7 @@ const mk = (id: string, x: number): CustomNode => ({
   id,
   position: { x, y: 150 },
   data: {
-    title: id[0].toUpperCase() + id.slice(1),
+    title: id === "llm" ? "LLM" : id[0].toUpperCase() + id.slice(1),
     label: id,
     status: "idle",
   },

@@ -17,29 +17,42 @@ import { decodeFromURL } from "@/lib/share";
 
 export default function Page() {
   const [query, setQuery] = useState("What is MCP?");
-  const [nodes, setNodes] = useState<CustomNode[]>(initialNodes as unknown as CustomNode[]);
+  const [nodes, setNodes] = useState<CustomNode[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
-  // Shareable URL → preload
+  type SharePayload = { nodes?: CustomNode[]; edges?: Edge[]; query?: string };
+
+  function isSharePayload(x: unknown): x is SharePayload {
+    if (!x || typeof x !== "object") return false;
+    const o = x as Record<string, unknown>;
+    const nodesOk = !("nodes" in o) || Array.isArray(o.nodes);
+    const edgesOk = !("edges" in o) || Array.isArray(o.edges);
+    const queryOk = !("query" in o) || typeof o.query === "string";
+    return nodesOk && edgesOk && queryOk;
+  }
+
   useEffect(() => {
-    const cfg = decodeFromURL();
-    if (cfg) {
-      setNodes(cfg.nodes ?? initialNodes);
-      setEdges(cfg.edges ?? initialEdges);
-      if (cfg.query) setQuery(cfg.query);
+    const raw = decodeFromURL();
+    if (isSharePayload(raw)) {
+      setNodes(raw.nodes ?? initialNodes);
+      setEdges(raw.edges ?? initialEdges);
+      if (raw.query) setQuery(raw.query);
     }
   }, []);
 
   const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
   const pipeline = usePipeline({ 
     api, 
-    nodes: nodes as unknown as Node[], 
+    nodes, 
     edges, 
     query 
   });
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
+    (changes: NodeChange[]) => 
+      setNodes((nds: CustomNode[]) => 
+        applyNodeChanges(changes, nds) as CustomNode[]
+      ),
     []
   );
 

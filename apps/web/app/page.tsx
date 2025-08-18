@@ -1,6 +1,13 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import { Node, Edge } from "reactflow";
+import { useCallback, useEffect, useState } from "react";
+import { 
+  Edge, 
+  NodeChange, 
+  applyNodeChanges, 
+  EdgeChange, 
+  applyEdgeChanges,
+} from "reactflow";
+import type { CustomNode } from "@/types";
 import Canvas from "@/components/Canvas";
 import Toolbar from "@/components/Toolbar";
 import RightPanel from "@/components/RightPanel";
@@ -10,7 +17,7 @@ import { decodeFromURL } from "@/lib/share";
 
 export default function Page() {
   const [query, setQuery] = useState("What is MCP?");
-  const [nodes, setNodes] = useState<Node[]>(initialNodes);
+  const [nodes, setNodes] = useState<CustomNode[]>(initialNodes as unknown as CustomNode[]);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
 
   // Shareable URL → preload
@@ -24,7 +31,22 @@ export default function Page() {
   }, []);
 
   const api = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-  const pipeline = usePipeline({ api, nodes, edges, query, setNodes });
+  const pipeline = usePipeline({ 
+    api, 
+    nodes: nodes as unknown as Node[], 
+    edges, 
+    query 
+  });
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as CustomNode[]),
+    []
+  );
+
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    []
+  );
 
   const left = (
     <div className="col-span-9 space-y-4">
@@ -37,14 +59,18 @@ export default function Page() {
           setNodes(tpl.nodes);
           setEdges(tpl.edges);
         }}
-        onShare={() => pipeline.share({ query })}
+        onShare={() => pipeline.share({ 
+          nodes,
+          edges,
+          query 
+        })}
         running={pipeline.running}
       />
       <Canvas
         nodes={nodes}
         edges={edges}
-        setNodes={setNodes}
-        setEdges={setEdges}
+        setNodes={onNodesChange}
+        setEdges={onEdgesChange}
         statuses={pipeline.statuses}
       />
     </div>

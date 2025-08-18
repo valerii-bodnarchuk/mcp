@@ -4,7 +4,7 @@ import LogPanel from "./LogPanel";
 type Props = {
   logs: { type: string; [key: string]: unknown }[];
   metrics: { totalMs: number; tokensIn: number; tokensOut: number };
-  ctx: Record<string, unknown>;
+  ctx: string[];
   cost: { totalUSD: number; byStep: { step: string; usd: number }[] };
   running: boolean;
   onClear: () => void;

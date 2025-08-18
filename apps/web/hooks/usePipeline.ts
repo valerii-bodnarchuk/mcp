@@ -1,8 +1,16 @@
 "use client";
 import { useState } from "react";
 import { Edge } from "reactflow";
+import type { CustomNode } from "@/types";
 
-export function usePipeline({ api, nodes, edges, query /* setNodes не трогаем */ }: { api: string; nodes: Node[]; edges: Edge[]; query: string }) {
+type PipelineConfig = {
+  api: string;
+  nodes: CustomNode[];
+  edges: Edge[];
+  query: string;
+};
+
+export function usePipeline({ api, nodes, edges, query }: PipelineConfig) {
   const [running, setRunning] = useState(false);
   const [logs, setLogs] = useState<{ type: string; [key: string]: unknown }[]>([]);
   const [statuses, setStatuses] = useState<Record<string, { status: string; meta?: string }>>({});

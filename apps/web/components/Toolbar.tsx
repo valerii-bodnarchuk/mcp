@@ -6,7 +6,7 @@ type Props = {
   setQuery: (s: string) => void;
   onRun: () => void;
   onStream: () => void;
-  onTemplate: (tpl: Record<string, unknown>) => void;
+  onTemplate: (tpl: { nodes: any[]; edges: any[] }) => void;
   onShare: () => void;
   running: boolean;
 };

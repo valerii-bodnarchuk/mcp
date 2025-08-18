@@ -1,6 +1,6 @@
-import { Pipeline, StepIO } from "./contracts.js";
+import { Pipeline, StepIO, PipelineEvent } from "./contracts.js";
 
-export async function executePipeline(p: Pipeline, input: StepIO["input"], onEvent?: (e: any) => void) {
+export async function executePipeline(p: Pipeline, input: StepIO["input"], onEvent?: (e: PipelineEvent) => void) {
   let io: StepIO = { input, context: {} };
   for (const step of p.steps) {
     const started = Date.now();

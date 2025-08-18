@@ -2,4 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body, #__next { height: 100%; }
+/* base theme */
+html { background:#0B0F14; color:#E6EDF3; }
+* { scrollbar-width: thin; scrollbar-color: #334155 transparent; }
+::selection { background: rgba(99,102,241,0.2); color: #c7d2fe; } /* indigo-500/20 */

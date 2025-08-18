@@ -20,14 +20,14 @@ const route: FastifyPluginAsync = async (app) => {
       PostStep(),
     ] };
 
-    const result = await executePipeline(pipeline, { query: req.body.query });
+    const result = await executePipeline(pipeline, req.body.query);
     return reply.send(result);
   });
 
   // SSE stream of step events
   app.get("/events", async (req, reply) => {
     // CORS для SSE
-    const origin = (req.headers as any).origin ?? "*";
+    const origin = (req.headers as { origin: string }).origin ?? "*";
     reply.raw.setHeader("Access-Control-Allow-Origin", origin);
     // если не нужны куки — credentials не ставим
     // reply.raw.setHeader("Access-Control-Allow-Credentials", "true");
@@ -37,9 +37,9 @@ const route: FastifyPluginAsync = async (app) => {
     reply.raw.setHeader("Cache-Control", "no-cache");
     reply.raw.setHeader("Connection", "keep-alive");
     // Отправляем заголовки сразу
-    (reply.raw as any).flushHeaders?.();
+    (reply.raw as { flushHeaders?: () => void }).flushHeaders?.();
   
-    const write = (data: any) => reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
+    const write = (data: { type: string; [key: string]: unknown }) => reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
   
     // keep-alive, чтобы прокси/браузер не закрывали коннект
     const hb = setInterval(() => reply.raw.write(`: ping\n\n`), 15000);
@@ -56,7 +56,7 @@ const route: FastifyPluginAsync = async (app) => {
       ]
     };
   
-    executePipeline(pipeline, { query: (req.query as any)?.q || "What is MCP?" }, write)
+    executePipeline(pipeline, (req.query as { q: string })?.q || "What is MCP?", write)
       .then((ctx) => write({ type: "done", ctx }))
       .catch((err) => write({ type: "error", error: String(err) }))
       .finally(() => {

@@ -1,32 +1,51 @@
 "use client";
-import React from "react";
-import ReactFlow, { Background, Controls, MiniMap } from "reactflow";
+import ReactFlow, { Background, Controls, MiniMap, Node, Edge, NodeTypes, EdgeTypes, NodeChange, EdgeChange } from "reactflow";
 import "reactflow/dist/style.css";
+import CustomNode from "./nodes/CustomNode";
+import AnimatedEdge from "./edges/AnimatedEdge";
 
-const nodes = [
-  { id: "1", position: { x: 50, y: 30 }, data: { label: "Input" }, type: "input" },
-  { id: "2", position: { x: 200, y: 30 }, data: { label: "Validate" } },
-  { id: "3", position: { x: 370, y: 30 }, data: { label: "Embed" } },
-  { id: "4", position: { x: 520, y: 30 }, data: { label: "Search" } },
-  { id: "5", position: { x: 670, y: 30 }, data: { label: "Context" } },
-  { id: "6", position: { x: 820, y: 30 }, data: { label: "LLM" } },
-  { id: "7", position: { x: 990, y: 30 }, data: { label: "Post" }, type: "output" }
-];
-const edges = [
-  { id: "e1-2", source: "1", target: "2" },
-  { id: "e2-3", source: "2", target: "3" },
-  { id: "e3-4", source: "3", target: "4" },
-  { id: "e4-5", source: "4", target: "5" },
-  { id: "e5-6", source: "5", target: "6" },
-  { id: "e6-7", source: "6", target: "7" }
-];
+const nodeTypes: NodeTypes = { custom: CustomNode };
+const edgeTypes: EdgeTypes = { animated: AnimatedEdge };
 
-export default function Canvas() {
+type Props = {
+  nodes: Node[]; 
+  edges: Edge[];
+  setNodes: (n: Node[] | ((nodes: Node[]) => Node[])) => void; 
+  setEdges: (e: Edge[] | ((edges: Edge[]) => Edge[])) => void;
+  statuses: Record<string, { status: string; meta?: string }>;
+};
+
+export default function Canvas({ nodes, edges, setNodes, setEdges, statuses }: Props) {
+  // inject status/meta into nodes
+  const withStatus = nodes.map((n) => ({
+    ...n,
+    data: { ...n.data, ...(statuses[n.id] ?? {}) },
+    type: "custom",
+  }));
+  const withType = edges.map((e) => ({ ...e, type: "animated" as const }));
+
   return (
-    <div className="h-[520px] rounded-2xl border border-zinc-800 overflow-hidden">
-      <ReactFlow nodes={nodes} edges={edges} fitView>
-        <Background />
-        <MiniMap />
+    <div className="h-[72vh] rounded-2xl border border-slate-800 bg-[#0B0F14]">
+      <ReactFlow
+        nodes={withStatus}
+        edges={withType}
+        nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        fitView
+        proOptions={{ hideAttribution: true }}
+        onNodesChange={(changes) => {
+          if (window.applyNodeChanges) {
+            setNodes((nodes) => window.applyNodeChanges(changes, nodes));
+          }
+        }}
+        onEdgesChange={(changes) => {
+          if (window.applyEdgeChanges) {
+            setEdges((edges) => window.applyEdgeChanges(changes, edges));
+          }
+        }}
+      >
+        <Background gap={18} size={1} color="#1f2937" />
+        <MiniMap className="!bg-[#0B0F14]" />
         <Controls />
       </ReactFlow>
     </div>

@@ -22,7 +22,7 @@ export const SearchStep = (name = "search"): Step => ({
     });
 
     // Клиент может вернуть либо массив, либо объект с { result }
-    const points: QHit[] = Array.isArray(res) ? (res as QHit[]) : ((res as any)?.result ?? []);
+    const points: QHit[] = Array.isArray(res) ? (res as QHit[]) : ((res as { result: QHit[] })?.result ?? []);
 
     const hits = points.map((p) => {
       const payload = (p?.payload ?? {}) as Record<string, unknown>;

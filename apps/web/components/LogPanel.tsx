@@ -1,9 +1,11 @@
 "use client";
-export default function LogPanel({ logs }:{ logs: any[] }) {
+export default function LogPanel({ logs }: { logs: { type: string; [key: string]: unknown }[] }) {
   return (
-    <div className="h-[520px] rounded-2xl border border-zinc-800 p-3 overflow-auto text-sm">
-      {logs.map((l, i) => (
-        <pre key={i} className="mb-2 whitespace-pre-wrap">{JSON.stringify(l, null, 2)}</pre>
+    <div className="font-mono text-[11px] space-y-2">
+      {logs.map((log, i) => (
+        <pre key={i} className="bg-[#0B0F14] border border-slate-800 rounded-lg p-2 whitespace-pre-wrap break-words">
+          {JSON.stringify(log, null, 2)}
+        </pre>
       ))}
     </div>
   );

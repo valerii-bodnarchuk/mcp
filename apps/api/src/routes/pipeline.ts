@@ -39,7 +39,7 @@ const route: FastifyPluginAsync = async (app) => {
     const pipeline = { steps: [InputStep(), ValidateStep(), EmbedStep(), SearchStep(), ContextBuildStep(), LlmStep(), PostStep()] };
 
     try {
-      const ctx = await executePipeline(pipeline, (req.query.q ?? "What is MCP?") as string, send);
+      const ctx = await executePipeline(pipeline, (req.query.q ?? "What is the Multi-Component Pipeline (MCP) in this app? Briefly explain each node: Input, Validate, Embed, Search, Context, LLM, Post.") as string, send);
       send({ type: "done", ctx });
     } catch (err) {
       send({ type: "error", error: String(err) });

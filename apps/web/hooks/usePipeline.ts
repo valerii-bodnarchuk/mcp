@@ -53,16 +53,40 @@ export function usePipeline({ api, nodes, edges, query }: PipelineConfig) {
     setStatuses(s => ({ ...s, [step]: { status, meta } }));
   }
 
-  function stream() {
-    clear(); setRunning(true);
-    const es = new EventSource(`${api}/pipeline/events?q=${encodeURIComponent(query)}`);
+  async function stream() {
+    clear(); 
+    setRunning(true);
+    setLogs([{ type: "info", msg: "Waking API..." }]);
+  
+    // короткий пинг перед стримом — греем Render
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), 8000);
+    try {
+      await fetch(`${api}/healthz`, { cache: "no-store", signal: ctrl.signal });
+    } catch (_) { /* ок, всё равно откроем SSE */ }
+  
+    const url = `${api}/pipeline/events?q=${encodeURIComponent(query)}`;
+    const es = new EventSource(url);
+  
+    let gotFirst = false;
     const t0 = Date.now();
     const norm = (s: string) => (s || "").toLowerCase();
-
+  
+    const watchdog = setTimeout(() => {
+      if (!gotFirst) setLogs(l => [...l, { type: "info", msg: "Warming… first response may take ~30–60s" }]);
+    }, 3000);
+  
+    es.onopen = () => {
+      // соединение установлено; ждём первое событие
+    };
+  
     es.onmessage = (e) => {
+      gotFirst = true;
+      clearTimeout(watchdog);
+  
       const evt = JSON.parse(e.data);
       setLogs(l => [...l, evt]);
-
+  
       if (evt.type === "step:start") setNodeStatus(norm(evt.step), "running");
       if (evt.type === "step:end") {
         setNodeStatus(norm(evt.step), "ok", `${evt.ms}ms`);
@@ -70,8 +94,8 @@ export function usePipeline({ api, nodes, edges, query }: PipelineConfig) {
         setMetrics(m => ({ ...m, totalMs: Date.now() - t0 }));
       }
       if (evt.type === "error") setNodeStatus(norm(evt.step ?? "llm"), "err");
-
-      // опционально считаем токены, если летят
+  
+      // usage / cost (если бэк шлёт)
       if (evt.type === "stream:token") setMetrics(m => ({ ...m, tokensOut: m.tokensOut + 1 }));
       if (evt.type === "usage") setMetrics(m => ({
         ...m,
@@ -79,9 +103,22 @@ export function usePipeline({ api, nodes, edges, query }: PipelineConfig) {
         tokensOut: evt.completion ?? m.tokensOut
       }));
       if (evt.type === "cost:update") setCost({ totalUSD: evt.totalUSD ?? 0, byStep: evt.byStep ?? [] });
+  
+      // завершение
+      if (evt.type === "done") {
+        if (evt.usage) setMetrics(m => ({ ...m, tokensIn: evt.usage.prompt ?? 0, tokensOut: evt.usage.completion ?? 0 }));
+        if (evt.cost) setCost(evt.cost);
+        es.close();
+        setRunning(false);
+      }
     };
-
-    es.onerror = () => { es.close(); setRunning(false); };
+  
+    es.onerror = () => {
+      clearTimeout(watchdog);
+      setLogs(l => [...l, { type: "error", msg: "Stream error", url }]);
+      setRunning(false);
+      es.close();
+    };
   }
 
   function share(_: { nodes: CustomNode[]; edges: Edge[]; query: string }) { /* твоя encodeToURL, не трогаю */ }

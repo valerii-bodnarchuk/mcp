@@ -16,3 +16,8 @@ services:
         value: 20.14.0
       - key: PORT
         value: 3001
+
+  - type: cron
+    name: mcpx-warmup
+    schedule: "*/5 * * * *"
+    command: 'curl -fsS "https://mcp-ssh9.onrender.com/healthz" >/dev/null || true'

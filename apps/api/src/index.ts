@@ -4,6 +4,7 @@ import websocket from "@fastify/websocket";
 import cors from "@fastify/cors";
 import pipelineRoutes from "./routes/pipeline.js";
 import ingestRoutes from "./routes/ingest.js";
+import warmup from "./routes/warmup.js";
 
 dotenv.config();
 
@@ -17,12 +18,14 @@ await app.register(cors, {
 });
 await app.register(websocket);
 
+app.register(warmup, { prefix: "/" });
 app.register(ingestRoutes, { prefix: "/ingest" });
 app.register(pipelineRoutes, { prefix: "/pipeline" });
 
 const port = Number(process.env.PORT || 3001);
 
 app.get("/healthz", async () => ({ ok: true }));
+app.get("/warmup", async () => ({ ok: true }));
 
 app.listen({ port, host: "0.0.0.0" }).catch((err) => {
   app.log.error(err);

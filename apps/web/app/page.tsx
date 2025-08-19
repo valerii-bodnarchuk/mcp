@@ -16,7 +16,7 @@ import { initialNodes, initialEdges } from "@/lib/templates";
 import { decodeFromURL } from "@/lib/share";
 
 export default function Page() {
-  const [query, setQuery] = useState("What is MCP?");
+  const [query, setQuery] = useState("What is the Multi-Component Pipeline (MCP) in this app?");
   const [nodes, setNodes] = useState<CustomNode[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
 

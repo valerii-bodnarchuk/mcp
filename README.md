@@ -32,7 +32,7 @@ docker compose up --build
 ```bash
 curl -X POST http://localhost:3001/pipeline/run \
   -H "Content-Type: application/json" \
-  -d '{"query":"What is MCP?"}'
+  -d '{"query":"What is the Multi-Component Pipeline?"}'
 ```
 
 **Example response:**

@@ -16,7 +16,7 @@ export default function Toolbar({ query, setQuery, onRun, onStream, onTemplate, 
     <div className="flex items-center gap-2">
       <input
         className="flex-1 px-4 py-3 rounded-xl bg-[#10161D] border border-slate-700 text-slate-100 outline-none"
-        placeholder="What is MCP?"
+        placeholder="What is the Multi-Component Pipeline (MCP)?"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") onRun(); }}

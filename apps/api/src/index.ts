@@ -25,7 +25,6 @@ app.register(pipelineRoutes, { prefix: "/pipeline" });
 const port = Number(process.env.PORT || 3001);
 
 app.get("/healthz", async () => ({ ok: true }));
-app.get("/warmup", async () => ({ ok: true }));
 
 app.listen({ port, host: "0.0.0.0" }).catch((err) => {
   app.log.error(err);

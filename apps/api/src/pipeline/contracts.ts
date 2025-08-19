@@ -6,9 +6,11 @@ export const StepIO = z.object({
 });
 export type StepIO = z.infer<typeof StepIO>;
 
+export type Emit = (event: { type: string; step: string; msg?: string }) => void;
+
 export type Step = {
   name: string;
-  run(io: StepIO): Promise<StepIO>;
+  run(io: StepIO, emit?: Emit): Promise<StepIO>;
 };
 
 export type Pipeline = {

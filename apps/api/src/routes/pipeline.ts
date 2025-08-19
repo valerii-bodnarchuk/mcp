@@ -10,9 +10,14 @@ import { PostStep } from "../pipeline/components/post.js";
 
 const route: FastifyPluginAsync = async (app) => {
   app.post<{ Body: { query: string } }>("/run", async (req, reply) => {
-    const pipeline = { steps: [InputStep(), ValidateStep(), EmbedStep(), SearchStep(), ContextBuildStep(), LlmStep(), PostStep()] };
-    const result = await executePipeline(pipeline, req.body.query);
-    return reply.send(result);
+    try {
+      const pipeline = { steps: [InputStep(), ValidateStep(), EmbedStep(), SearchStep(), ContextBuildStep(), LlmStep(), PostStep()] };
+      const result = await executePipeline(pipeline, req.body.query);
+      return reply.send(result);
+    } catch (e) {
+      req.log.error(e);
+      return reply.code(200).send({ error: "pipeline_failed", message: String(e) }); // чтобы UI не падал
+    }
   });
 
   app.get<{ Querystring: { q?: string } }>("/events", async (req, reply) => {

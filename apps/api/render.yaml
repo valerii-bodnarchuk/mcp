@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: mcpx-api
+    env: node
+    rootDir: apps/api        # если api именно тут; иначе убери строку
+    region: frankfurt
+    plan: starter
+    buildCommand: |
+      corepack enable
+      pnpm i --frozen-lockfile
+      pnpm build
+    startCommand: pnpm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 20.14.0
+      - key: PORT
+        value: 3001

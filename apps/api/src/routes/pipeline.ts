@@ -10,62 +10,39 @@ import { PostStep } from "../pipeline/components/post.js";
 
 const route: FastifyPluginAsync = async (app) => {
   app.post<{ Body: { query: string } }>("/run", async (req, reply) => {
-    const pipeline = { steps: [
-      InputStep(),
-      ValidateStep(),
-      EmbedStep(),
-      SearchStep(),
-      ContextBuildStep(),
-      LlmStep(),
-      PostStep(),
-    ] };
-
+    const pipeline = { steps: [InputStep(), ValidateStep(), EmbedStep(), SearchStep(), ContextBuildStep(), LlmStep(), PostStep()] };
     const result = await executePipeline(pipeline, req.body.query);
     return reply.send(result);
   });
 
-  // SSE stream of step events
-  app.get("/events", async (req, reply) => {
-    // CORS для SSE
-    const origin = (req.headers as { origin: string }).origin ?? "*";
+  app.get<{ Querystring: { q?: string } }>("/events", async (req, reply) => {
+    const origin = typeof req.headers.origin === "string" ? req.headers.origin : "*";
+
+    // CORS + SSE заголовки
+    reply.raw.statusCode = 200;
     reply.raw.setHeader("Access-Control-Allow-Origin", origin);
-    // если не нужны куки — credentials не ставим
-    // reply.raw.setHeader("Access-Control-Allow-Credentials", "true");
-  
-    // SSE заголовки
     reply.raw.setHeader("Content-Type", "text/event-stream");
-    reply.raw.setHeader("Cache-Control", "no-cache");
+    reply.raw.setHeader("Cache-Control", "no-cache, no-transform");
     reply.raw.setHeader("Connection", "keep-alive");
-    // Отправляем заголовки сразу
-    (reply.raw as { flushHeaders?: () => void }).flushHeaders?.();
-  
-    const write = (data: { type: string; [key: string]: unknown }) => reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
-  
-    // keep-alive, чтобы прокси/браузер не закрывали коннект
-    const hb = setInterval(() => reply.raw.write(`: ping\n\n`), 15000);
-    // закрытие при дисконнекте
-    req.raw.on("close", () => {
-      clearInterval(hb);
+    reply.raw.setHeader("X-Accel-Buffering", "no");
+    (reply.raw as any).flushHeaders?.();
+
+    const send = (data: unknown) => reply.raw.write(`data: ${JSON.stringify(data)}\n\n`);
+    const ping = setInterval(() => reply.raw.write(`: ping\n\n`), 15000);
+    req.raw.on("close", () => { clearInterval(ping); try { reply.raw.end(); } catch {} });
+
+    const pipeline = { steps: [InputStep(), ValidateStep(), EmbedStep(), SearchStep(), ContextBuildStep(), LlmStep(), PostStep()] };
+
+    try {
+      const ctx = await executePipeline(pipeline, (req.query.q ?? "What is MCP?") as string, send);
+      send({ type: "done", ctx });
+    } catch (err) {
+      send({ type: "error", error: String(err) });
+    } finally {
+      clearInterval(ping);
       try { reply.raw.end(); } catch {}
-    });
-  
-    const pipeline = {
-      steps: [
-        InputStep(), ValidateStep(), EmbedStep(),
-        SearchStep(), ContextBuildStep(), LlmStep(), PostStep()
-      ]
-    };
-  
-    executePipeline(pipeline, (req.query as { q: string })?.q || "What is MCP?", write)
-      .then((ctx) => write({ type: "done", ctx }))
-      .catch((err) => write({ type: "error", error: String(err) }))
-      .finally(() => {
-        clearInterval(hb);
-        try { reply.raw.end(); } catch {}
-      });
-  
-    return reply; // держим соединение открытым
+    }
+    return; // ничего не возвращаем после stream
   });
-  
 };
 export default route;

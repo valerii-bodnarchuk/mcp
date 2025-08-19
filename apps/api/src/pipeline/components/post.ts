@@ -1,9 +1,12 @@
 import { Step } from "../contracts.js";
 
-export const PostStep = (name = "postprocess"): Step => ({
+export const PostStep = (name = "post"): Step => ({
   name,
   async run(io) {
     const answer = io.context.answer as string;
-    return { input: null, context: { result: answer } };
+    return { 
+      input: answer,
+      context: { ...io.context, result: answer }
+    };
   },
 });
